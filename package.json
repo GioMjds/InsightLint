@@ -1,7 +1,7 @@
 {
   "name": "insightlint",
   "displayName": "insightlint",
-  "description": "",
+  "description": "AI-powered code review assistant",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.101.0"
@@ -9,15 +9,41 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": ["onLanguage:javascript", "onLanguage:python", "onLanguage:typescript"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "insightlint.helloWorld",
-        "title": "Hello World"
+        "command": "insightlint.startReview",
+        "title": "Start Code Review",
+        "category": "InsightLint"
+      },
+      {
+        "command": "insightlint.showPanel",
+        "title": "Show Code Review Panel",
+        "category": "InsightLint"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "insightlint.reviewPanel",
+          "name": "Code Review",
+          "when": "resourceExtname != ''",
+          "icon": ""
+        }
+      ]
+    },
+    "configuration": {
+      "title": "InsightLint",
+      "properties": {
+        "insightlint.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Gemini API Key"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -28,14 +54,17 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.101.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.101.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
-    "eslint": "^9.25.1",
-    "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.25.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1"
   }
 }

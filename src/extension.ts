@@ -1,26 +1,48 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { WebViewProvider } from './providers/webviewProvider';
+import { CodeAnalyzer } from './services/codeAnalyzer';
+import { languageDetector } from './utils/languageDetector';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "insightlint" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('insightlint.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from insightlint!');
-	});
-
-	context.subscriptions.push(disposable);
+    console.log('InsightLint extension is now active!');
+    
+    const webviewProvider = new WebViewProvider(context.extensionUri);
+    const codeAnalyzer = new CodeAnalyzer();
+    
+    // Register webview provider
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(WebViewProvider.viewType, webviewProvider)
+    );
+    
+    // Register commands
+    const startReviewCommand = vscode.commands.registerCommand('insightlint.startReview', async () => {
+        const language = languageDetector.getCurrentLanguage();
+        if (!language) {
+            vscode.window.showErrorMessage('Please open a supported programming language file');
+            return;
+        }
+        
+        const result = await codeAnalyzer.analyzeCurrentFile();
+        if (result) {
+            webviewProvider.updateContent(result);
+            vscode.commands.executeCommand('insightlint.reviewPanel.focus');
+        }
+    });
+    
+    const showPanelCommand = vscode.commands.registerCommand('insightlint.showPanel', () => {
+        vscode.commands.executeCommand('insightlint.reviewPanel.focus');
+    });
+    
+    // Auto-trigger on file changes (optional)
+    const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(() => {
+        // You can add auto-analysis logic here if needed
+    });
+    
+    context.subscriptions.push(
+        startReviewCommand,
+        showPanelCommand,
+        onDidChangeActiveTextEditor
+    );
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
