@@ -1,22 +1,14 @@
-declare const acquireVsCodeApi: () => any;
+const vscode = acquireVsCodeApi();
 
-interface ReviewData {
-    suggestions: string[];
-    bugs: string[];
-    bestPractices: string[];
-    performance: string[];
-    security: string[];
-}
+let isLoading = false;
 
-interface ReviewMessage {
-    type: string;
-    data: ReviewData;
-}
+console.log("Webview script loaded");
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error("Error in webview:", message, "at", source, lineno, colno, error);
+};
 
-let isLoading: boolean = false;
-
-window.addEventListener('message', (event: MessageEvent) => {
-    const message = event.data as ReviewMessage;
+window.addEventListener('message', (event) => {
+    const message = event.data;
     
     switch (message.type) {
         case 'updateReview':
@@ -31,7 +23,7 @@ window.addEventListener('message', (event: MessageEvent) => {
     }
 });
 
-function showLoading(): void {
+function showLoading() {
     isLoading = true;
     const content = document.getElementById('content');
     if (content) {
@@ -43,11 +35,11 @@ function showLoading(): void {
     }
 }
 
-function hideLoading(): void {
+function hideLoading() {
     isLoading = false;
 }
 
-function updateReviewContent(data: ReviewData): void {
+function updateReviewContent(data) {
     hideLoading();
     const content = document.getElementById('content');
     if (!content) {
@@ -78,7 +70,7 @@ function updateReviewContent(data: ReviewData): void {
     `;
 }
 
-function createSection(title: string, items: string[], itemClass: string): string {
+function createSection(title, items, itemClass) {
     if (items.length === 0) {
         return '';
     }

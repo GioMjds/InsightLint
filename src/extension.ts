@@ -21,12 +21,21 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage('Please open a supported programming language file');
             return;
         }
+
+		webviewProvider.showLoading();
+
+		try {
+			const result = await codeAnalyzer.analyzeCurrentFile();
+			if (result) {
+				webviewProvider.updateContent(result);
+				await vscode.commands.executeCommand('insightlint.reviewPanel.focus');
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Code analysis failed: ${error}`);
+		} finally {
+			webviewProvider.hideLoading();
+		}
         
-        const result = await codeAnalyzer.analyzeCurrentFile();
-        if (result) {
-            webviewProvider.updateContent(result);
-            vscode.commands.executeCommand('insightlint.reviewPanel.focus');
-        }
     });
     
     const showPanelCommand = vscode.commands.registerCommand('insightlint.showPanel', () => {

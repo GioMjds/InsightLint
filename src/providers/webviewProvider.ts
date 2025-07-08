@@ -31,12 +31,17 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
                 type: "updateReview",
                 data: reviewResult
             });
+        } else {
+            console.error("View not available when trying to update content");
         }
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
         const stylesUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src', 'webview', 'main.css'));
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'main.js'));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src', 'webview', 'main.js'));
+
+        console.log(`Styles URI: ${stylesUri.toString()}`);
+        console.log(`Script URI: ${scriptUri.toString()}`);
 
         return `<!DOCTYPE html>
                 <html lang="en">
@@ -57,5 +62,21 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
                 </body>
                 </html>
         `;
+    }
+
+    public showLoading() {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: "showLoading"
+            });
+        }
+    }
+
+    public hideLoading() {
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: "hideLoading"
+            });
+        }
     }
 }

@@ -24,11 +24,29 @@
         "category": "InsightLint"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "insightlint",
+          "title": "InsightLint",
+          "icon": "resources/icon.png"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "insightlint.startReview",
+          "group": "navigation"
+        }
+      ]
+    },
     "views": {
       "explorer": [
         {
           "id": "insightlint.reviewPanel",
           "name": "Code Review",
+          "type": "webview",
           "when": "resourceExtname != ''",
           "icon": ""
         }

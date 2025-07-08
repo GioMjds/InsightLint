@@ -23,7 +23,7 @@ export class GeminiService {
 
         if (apiKey) {
             this.genAI = new GoogleGenerativeAI(apiKey);
-            this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            this.model = this.genAI.getGenerativeModel({ model: 'models/gemini-2.5-flash' });
         }
     }
 
@@ -53,27 +53,36 @@ export class GeminiService {
         }
         `;
 
-        try {
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response();
-            const text = response.text();
+        const maxRetries: number = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const result = await this.model.generateContent(prompt);
+                const response = result.response;
+                const text = response.text();
 
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0]);
+                console.log(`Gemini response: ${text}`);
+                
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                
+                    const result = {
+                        suggestions: parsed.suggestions || [],
+                        bugs: parsed.bugs || [],
+                        bestPractices: parsed.bestPractices || [],
+                        performance: parsed.performance || [],
+                        security: parsed.security || [],
+                    };
 
-                return {
-                    suggestions: parsed.suggestions || [],
-                    bugs: parsed.bugs || [],
-                    bestPractices: parsed.bestPractices || [],
-                    performance: parsed.performance || [],
-                    security: parsed.security || [],
-                };
+                    console.log(`Parsed result: ${result}`);
+                    return result;
+                }
+
+                throw new Error("Invalid response format from Gemini model. Expected JSON.");
+            } catch (error) {
+                throw new Error(`Error during code review: ${error}`);
             }
-
-            throw new Error("Invalid response format from Gemini model. Expected JSON.");
-        } catch (error) {
-            throw new Error(`Error during code review: ${error}`);
         }
+        throw new Error(`Code review failed after multiple attempts.`);
     }
 }
