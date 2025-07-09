@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { CodeReviewResult } from '../services/geminiService';
+import { MarkdownHelper } from '../utils/helpers';
 
 export class WebViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'insightlint.reviewPanel';
@@ -25,15 +26,27 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     }
 
-    public updateContent(reviewResult: CodeReviewResult) {
+    public async updateContent(reviewResult: CodeReviewResult) {
         if (this._view) {
+            const processedResult = this.processMarkdownContent(reviewResult);
+
             this._view.webview.postMessage({
                 type: "updateReview",
-                data: reviewResult
+                data: processedResult
             });
         } else {
             console.error("View not available when trying to update content");
         }
+    }
+
+    private processMarkdownContent(reviewResult: CodeReviewResult) {
+        return {
+            suggestions: reviewResult.suggestions.map(s => MarkdownHelper.markdownToHtml(s)),
+            bugs: reviewResult.bugs.map(b => MarkdownHelper.markdownToHtml(b)),
+            bestPractices: reviewResult.bestPractices.map(bp => MarkdownHelper.markdownToHtml(bp)),
+            performance: reviewResult.performance.map(p => MarkdownHelper.markdownToHtml(p)),
+            security: reviewResult.security.map(s => MarkdownHelper.markdownToHtml(s))
+        };
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {

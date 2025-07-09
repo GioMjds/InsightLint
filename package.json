@@ -9,7 +9,11 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onLanguage:javascript", "onLanguage:python", "onLanguage:typescript"],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:python",
+    "onLanguage:typescript"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -29,7 +33,7 @@
         {
           "id": "insightlint",
           "title": "InsightLint",
-          "icon": "resources/icon.png"
+          "icon": "$(search-view-icon)"
         }
       ]
     },
@@ -48,7 +52,7 @@
           "name": "Code Review",
           "type": "webview",
           "when": "resourceExtname != ''",
-          "icon": ""
+          "icon": "$(search-view-icon)"
         }
       ]
     },
@@ -83,6 +87,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1"
+    "@google/generative-ai": "^0.24.1",
+    "@types/marked": "^5.0.2",
+    "highlight.js": "^11.11.1",
+    "marked": "^16.0.0"
   }
 }

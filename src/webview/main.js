@@ -86,3 +86,37 @@ function createSection(title, items, itemClass) {
         </div>
     `;
 }
+
+function addMarkdownStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .item code {
+            background-color: var(--vscode-textCodeBlock-background);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: var(--vscode-editor-font-family);
+        }
+        
+        .item pre {
+            background-color: var(--vscode-textCodeBlock-background);
+            padding: 8px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        
+        .item blockquote {
+            border-left: 4px solid var(--vscode-textLink-foreground);
+            margin: 0;
+            padding-left: 16px;
+        }
+        
+        .item ul, .item ol {
+            padding-left: 20px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    addMarkdownStyles();
+});
