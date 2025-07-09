@@ -59,8 +59,6 @@ export class GeminiService {
                 const result = await this.model.generateContent(prompt);
                 const response = result.response;
                 const text = response.text();
-
-                console.log(`Gemini response: ${text}`);
                 
                 const jsonMatch = text.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
