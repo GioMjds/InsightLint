@@ -22,29 +22,30 @@ export function activate(context: vscode.ExtensionContext) {
             const language = languageDetector.getCurrentLanguage();
             if (!language) {
                 vscode.window.showErrorMessage(
-                "Please open a supported programming language file"
-            );
-            return;
-        }
-
-        webviewProvider.showLoading();
-
-        try {
-            const result = await codeAnalyzer.analyzeCurrentFile();
-                if (result) {
-                webviewProvider.updateContent(result);
-
-                await vscode.commands.executeCommand(
-                    "workbench.view.extension.insightlint"
+                    "Please open a supported programming language file"
                 );
-                await vscode.commands.executeCommand("insightlint.reviewPanel.focus");
+                return;
             }
-        } catch (error) {
-            vscode.window.showErrorMessage(`Code analysis failed: ${error}`);
-        } finally {
-            webviewProvider.hideLoading();
+        
+            webviewProvider.showLoading();
+        
+            try {
+                const result = await codeAnalyzer.analyzeCurrentFile();
+                if (result) {
+                    webviewProvider.updateContent(result);
+                
+                    await vscode.commands.executeCommand(
+                        "workbench.view.extension.insightlint"
+                    );
+                    await vscode.commands.executeCommand("insightlint.reviewPanel.focus");
+                }
+            } catch (error) {
+                vscode.window.showErrorMessage(`Code analysis failed: ${error}`);
+            } finally {
+                webviewProvider.hideLoading();
+            }
         }
-    });
+    );
 
     const showPanelCommand = vscode.commands.registerCommand(
         "insightlint.showPanel",
