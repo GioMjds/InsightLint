@@ -5,6 +5,7 @@
   "version": "0.0.3",
   "icon": "logo.png",
   "publisher": "Mimic",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/GioMjds/InsightLint.git"
