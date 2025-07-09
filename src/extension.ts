@@ -4,8 +4,6 @@ import { CodeAnalyzer } from "./services/codeAnalyzer";
 import { languageDetector } from "./utils/languageDetector";
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log("InsightLint extension is now active!");
-
     const webviewProvider = new WebViewProvider(context.extensionUri);
     const codeAnalyzer = new CodeAnalyzer();
 

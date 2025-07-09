@@ -66,7 +66,7 @@ export class languageDetector {
     static getCurrentLanguage(): string | null {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) {
-            return null; // No active editor
+            return null;
         }
 
         const languageId = activeEditor.document.languageId;
@@ -76,13 +76,13 @@ export class languageDetector {
     static getCurrentCode(): string | null {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) {
-            return null; // No active editor
+            return null;
         }
 
         const selection = activeEditor.selection;
         if (selection.isEmpty) {
-            return activeEditor.document.getText(); // Return entire document if no selection
+            return activeEditor.document.getText();
         }
-        return activeEditor.document.getText(selection); // Return selected text
+        return activeEditor.document.getText(selection);
     }
 }

@@ -74,7 +74,6 @@ export class GeminiService {
                         security: parsed.security || [],
                     };
 
-                    console.log(`Parsed result: ${result}`);
                     return result;
                 }
 

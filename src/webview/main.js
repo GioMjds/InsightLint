@@ -20,102 +20,118 @@ window.addEventListener("message", (event) => {
   }
 });
 
+// Add event listener for the review button
+function startCodeReview() {
+    vscode.postMessage({
+        type: "startReview",
+    });
+}
+
 function showLoading() {
-  statusIndicator.textContent = "Analyzing...";
-  statusIndicator.style.background = "var(--warning)";
-  contentEl.innerHTML = `
+    statusIndicator.textContent = "Analyzing...";
+    statusIndicator.style.background = "var(--warning)";
+
+    // Update button state
+    const reviewButton = document.getElementById("reviewButton");
+    if (reviewButton) {
+        reviewButton.disabled = true;
+        reviewButton.className = "review-button loading";
+        reviewButton.innerHTML = '<span class="button-icon">⏳</span>Analyzing...';
+    }
+
+    contentEl.innerHTML = `
         <div class="loading-container">
             <div class="spinner"></div>
             <p>AI is reviewing your code...</p>
             <div class="hint">This may take a few seconds</div>
         </div>
-    `;
-  statsBarEl.innerHTML = "";
+      `;
+    statsBarEl.innerHTML = "";
 }
 
 function hideLoading() {
-  statusIndicator.textContent = "Analysis Complete";
-  statusIndicator.style.background = "var(--success)";
+    statusIndicator.textContent = "Analysis Complete";
+    statusIndicator.style.background = "var(--success)";
+
+    const reviewButton = document.getElementById("reviewButton");
+    if (reviewButton) {
+        reviewButton.disabled = false;
+        reviewButton.className = "review-button";
+        reviewButton.innerHTML = '<span class="button-icon">🔍</span>Start Code Review';
+    }
 }
 
 function updateReviewContent(data) {
-  hideLoading();
+    hideLoading();
 
-  const hasResults =
-    data.suggestions.length > 0 ||
-    data.bugs.length > 0 ||
-    data.bestPractices.length > 0 ||
-    data.performance.length > 0 ||
-    data.security.length > 0;
+    const hasResults =
+        data.suggestions.length > 0 ||
+        data.bugs.length > 0 ||
+        data.bestPractices.length > 0 ||
+        data.performance.length > 0 ||
+        data.security.length > 0;
 
-  if (!hasResults) {
-    contentEl.innerHTML = `
+    if (!hasResults) {
+      contentEl.innerHTML = `
             <div class="welcome-card">
                 <div class="ai-icon">🎉</div>
                 <h2>Perfect Code!</h2>
                 <p>No issues found in your code</p>
+                <button id="reviewButton" class="review-button" onclick="startCodeReview()">
+                    <span class="button-icon">🔍</span>
+                    Start New Review
+                </button>
                 <div class="hint">AI detected no improvements needed</div>
             </div>
         `;
-    statsBarEl.innerHTML = "";
-    return;
+      statsBarEl.innerHTML = "";
+      return;
   }
 
-  const stats = {
-    bugs: data.bugs.length,
-    suggestions: data.suggestions.length,
-    performance: data.performance.length,
-    security: data.security.length,
-    bestPractices: data.bestPractices.length,
-    total:
-      data.bugs.length +
-      data.suggestions.length +
-      data.performance.length +
-      data.security.length +
-      data.bestPractices.length,
-  };
+    // Update content
+    contentEl.innerHTML = `
+          <div class="results-header">
+              <h3>Analysis Results</h3>
+              <button id="reviewButton" class="review-button compact" onclick="startCodeReview()">
+                  <span class="button-icon">🔍</span>
+                  Re-analyze
+              </button>
+          </div>
+          ${createSection("Potential Bugs", data.bugs)}
+          ${createSection("Suggestions", data.suggestions)}
+          ${createSection("Performance", data.performance)}
+          ${createSection("Security", data.security)}
+          ${createSection("Best Practices", data.bestPractices)}
+      `;
 
-  // Update content
-  contentEl.innerHTML = `
-        ${createSection("Potential Bugs", data.bugs)}
-        ${createSection("Suggestions", data.suggestions)}
-        ${createSection("Performance", data.performance)}
-        ${createSection("Security", data.security)}
-        ${createSection("Best Practices", data.bestPractices)}
-    `;
-
-  addMarkdownStyles();
+    addMarkdownStyles();
 }
 
 function createSection(title, items) {
-  if (items.length === 0) {
-    return "";
-  }
+    if (items.length === 0) {
+        return "";
+    }
 
-  const itemsHtml = items
-    .map(
-      (item) => `
+    const itemsHtml = items.map((item) => `
         <div class="item">
             <div class="item-content">${item}</div>
         </div>
-    `
-    )
-    .join("");
+    `).join("");
 
-  return `
-        <div class="section">
-            <div class="section-header">
-                <span class="icon">${title.split(" ")[0]}</span>
-                ${title} (${items.length})
-            </div>
-            ${itemsHtml}
-        </div>
-    `;
+    return `
+          <div class="section">
+              <div class="section-header">
+                  <span class="icon">${title.split(" ")[0]}</span>
+                  ${title} (${items.length})
+              </div>
+              ${itemsHtml}
+          </div>
+      `;
 }
 
 function addMarkdownStyles() {
-  const style = document.createElement("style");
-  style.textContent = `
+    const style = document.createElement("style");
+    style.textContent = `
         .item-content {
             line-height: 1.6;
             word-wrap: break-word;
@@ -245,10 +261,10 @@ function addMarkdownStyles() {
             margin-top: 16px;
         }
     `;
-  document.head.appendChild(style);
+    document.head.appendChild(style);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  statusIndicator.textContent = "Ready";
-  addMarkdownStyles();
+    statusIndicator.textContent = "Ready";
+    addMarkdownStyles();
 });
