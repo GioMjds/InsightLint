@@ -53,23 +53,46 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
         const stylesUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src', 'webview', 'main.css'));
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src', 'webview', 'main.js'));
 
-        console.log(`Styles URI: ${stylesUri.toString()}`);
-        console.log(`Script URI: ${scriptUri.toString()}`);
-
         return `<!DOCTYPE html>
                 <html lang="en">
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>InsightLint AI Review</title>
                     <link href="${stylesUri}" rel="stylesheet">
-                    <title>Code Review</title>
+                    <style>
+                        /* Add theme variables for consistent styling */
+                        :root {
+                            --primary: #4361ee;
+                            --success: #06d6a0;
+                            --warning: #ffd166;
+                            --danger: #ef476f;
+                            --info: #118ab2;
+                            --card-bg: rgba(255, 255, 255, 0.05);
+                            --border-radius: 8px;
+                            --transition: all 0.3s ease;
+                        }
+                    </style>
                 </head>
                 <body>
                     <div id="app">
-                        <h2>Code Review Results</h2>
-                        <div id="content">
-                            <p>Run code analysis to see results</p>
-                        </div>
+                        <header>
+                            <div class="header-content">
+                                <h1>✨ InsightLint AI</h1>
+                                <p class="subtitle">AI-powered code insights</p>
+                            </div>
+                            <div class="status-pill" id="status-indicator">Ready</div>
+                        </header>
+                        
+                        <main id="content">
+                            <div class="welcome-card">
+                                <div class="ai-icon">🧠</div>
+                                <h2>AI Code Review</h2>
+                                <p>Ctrl + Shift + P for Command Pallete, and search for "InsightLint: Start Code Review" to review your current code file</p>
+                            </div>
+                        </main>
+                        
+                        <div class="stats-bar" id="stats-bar"></div>
                     </div>
                     <script src="${scriptUri}"></script>
                 </body>

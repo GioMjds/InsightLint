@@ -21,11 +21,6 @@
         "command": "insightlint.startReview",
         "title": "Start Code Review",
         "category": "InsightLint"
-      },
-      {
-        "command": "insightlint.showPanel",
-        "title": "Show Code Review Panel",
-        "category": "InsightLint"
       }
     ],
     "viewsContainers": {
@@ -46,7 +41,7 @@
       ]
     },
     "views": {
-      "explorer": [
+      "insightlint": [
         {
           "id": "insightlint.reviewPanel",
           "name": "Code Review",
@@ -63,6 +58,11 @@
           "type": "string",
           "default": "",
           "description": "Gemini API Key"
+        },
+        "insightlint.useSecondarySideBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show InsightLint panel in secondary sidebar (like GitHub Copilot)"
         }
       }
     }

@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InsightLint Review</title>
+    <title>InsightLint AI Review</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
     <div id="app">
         <header>
-            <h1>🔍 Code Review</h1>
+            <div class="header-content">
+                <h1>✨ InsightLint AI</h1>
+                <p class="subtitle">AI-powered code insights</p>
+            </div>
+            <div class="status-pill" id="status-indicator">Ready</div>
         </header>
+        
         <main id="content">
-            <div class="welcome">
-                <p>Select a supported file and run analysis to see insights</p>
+            <div class="welcome-card">
+                <div class="ai-icon">🧠</div>
+                <h2>AI Code Review</h2>
+                <p>Select a file and run analysis to get AI-powered suggestions</p>
+                <div class="hint">Files supported: JavaScript, TypeScript, Python, Java</div>
             </div>
         </main>
+        
+        <div class="stats-bar" id="stats-bar"></div>
     </div>
     <script src="main.js"></script>
 </body>

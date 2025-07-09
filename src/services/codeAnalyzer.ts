@@ -21,7 +21,6 @@ export class CodeAnalyzer {
         try {
             const progress = vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "Analyzing code",
                 cancellable: false
             }, async (progress) => {
                 progress.report({ message: "Analyzing code..." });
