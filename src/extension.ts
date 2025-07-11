@@ -34,8 +34,6 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
 
-            console.log(apiKey);
-
             const language = languageDetector.getCurrentLanguage();
             if (!language) {
                 vscode.window.showErrorMessage(
