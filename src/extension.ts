@@ -19,6 +19,23 @@ export function activate(context: vscode.ExtensionContext) {
     const startReviewCommand = vscode.commands.registerCommand(
         "insightlint.startReview",
         async () => {
+            const config = vscode.workspace.getConfiguration("insightlint");
+            const apiKey = config.get<string>("geminiApiKey");
+
+            if (!apiKey || apiKey.trim() === "") {
+                vscode.window.showWarningMessage(
+                    "Gemini API key is not configured. Please set it up in the InsightLint panel.",
+                    "Open Settings"
+                ).then((selection) => {
+                    if (selection === "Open Settings") {
+                        vscode.commands.executeCommand("workbench.action.openSettings", "insightlint.geminiApiKey");
+                    }
+                });
+                return;
+            }
+
+            console.log(apiKey);
+
             const language = languageDetector.getCurrentLanguage();
             if (!language) {
                 vscode.window.showErrorMessage(
@@ -57,6 +74,20 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
+    const onDidChangeConfiguration = vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration("insightlint.geminiApiKey")) {
+            const config = vscode.workspace.getConfiguration("insightlint");
+            const apiKey = config.get<string>("geminiApiKey");
+            
+            if (webviewProvider.view) {
+                webviewProvider.view.webview.postMessage({
+                    type: "apiKeyStatus",
+                    hasApiKey: !!(apiKey && apiKey.trim())
+                });
+            }
+        }
+    });
+
     // Auto-trigger on file changes (optional)
     const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(() => {
       // You can add auto-analysis logic here if needed
@@ -65,7 +96,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         startReviewCommand,
         showPanelCommand,
-        onDidChangeActiveTextEditor
+        onDidChangeActiveTextEditor,
+        onDidChangeConfiguration
     );
 }
 

@@ -9,6 +9,10 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
 
     constructor(private readonly _extensionUri: vscode.Uri) {}
 
+    public get view(): vscode.WebviewView | undefined {
+        return this._view;
+    }
+
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
         context: vscode.WebviewViewResolveContext,
@@ -31,31 +35,55 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
                 case "startReview":
                     vscode.commands.executeCommand("insightlint.startReview");
                     break;
+                case "openSettings":
+                    vscode.commands.executeCommand("workbench.action.openSettings", "insightlint.geminiApiKey");
+                    break;
+                case "setApiKey":
+                    this.setApiKey(message.apiKey);
+                    break;
             }
         });
+
+        this.checkApiKey();
+    }
+
+    private async setApiKey(apiKey?: string) {
+        if (!apiKey || apiKey.trim() === "") {
+            vscode.window.showErrorMessage("Please enter a valid Gemini API Key.");
+            return;
+        }
+
+        try {
+            const config = vscode.workspace.getConfiguration("insightlint");
+            await config.update("geminiApiKey", apiKey, vscode.ConfigurationTarget.Global);
+            vscode.window.showInformationMessage("Gemini API Key updated successfully.");
+            this.checkApiKey();
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to update API Key: ${error}`);
+        }
+    }
+
+    private checkApiKey() {
+        const config = vscode.workspace.getConfiguration("insightlint");
+        const apiKey = config.get<string>("geminiApiKey");
+
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: "setApiKey",
+                hasApiKey: !!(apiKey && apiKey.trim() !== "")
+            });
+        }
     }
 
     public async updateContent(reviewResult: CodeReviewResult) {
         if (this._view) {
-            const processedResult = this.processMarkdownContent(reviewResult);
-
             this._view.webview.postMessage({
                 type: "updateReview",
-                data: processedResult,
+                data: reviewResult,
             });
         } else {
             console.error("View not available when trying to update content");
         }
-    }
-
-    private processMarkdownContent(reviewResult: CodeReviewResult) {
-        return {
-            suggestions: reviewResult.suggestions.map(s => MarkdownHelper.markdownToHtml(s)),
-            bugs: reviewResult.bugs.map(b => MarkdownHelper.markdownToHtml(b)),
-            bestPractices: reviewResult.bestPractices.map(bp => MarkdownHelper.markdownToHtml(bp)),
-            performance: reviewResult.performance.map(p => MarkdownHelper.markdownToHtml(p)),
-            security: reviewResult.security.map(s => MarkdownHelper.markdownToHtml(s))
-        };
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
@@ -70,7 +98,7 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
                     <title>InsightLint AI Review</title>
                     <link href="${stylesUri}" rel="stylesheet">
                     <style>
-                        /* Add theme variables for consistent styling */
+                        /* ...existing styles... */
                         :root {
                             --primary: #4361ee;
                             --success: #06d6a0;
@@ -146,6 +174,103 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
                             margin: 0;
                             font-size: 1.1rem;
                             font-weight: 600;
+                        }
+
+                        /* API Key Setup Styles */
+                        .setup-container {
+                            background: var(--card-bg);
+                            border-radius: var(--border-radius);
+                            padding: 30px;
+                            text-align: center;
+                            border: 1px solid var(--vscode-panel-border);
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                        }
+
+                        .setup-icon {
+                            font-size: 3rem;
+                            margin-bottom: 20px;
+                            color: var(--warning);
+                        }
+
+                        .api-key-form {
+                            margin: 20px 0;
+                            text-align: left;
+                        }
+
+                        .form-group {
+                            margin-bottom: 15px;
+                        }
+
+                        .form-label {
+                            display: block;
+                            margin-bottom: 5px;
+                            font-weight: 500;
+                            color: var(--vscode-foreground);
+                        }
+
+                        .form-input {
+                            width: 100%;
+                            padding: 10px 12px;
+                            border: 1px solid var(--vscode-input-border);
+                            border-radius: var(--border-radius);
+                            background: var(--vscode-input-background);
+                            color: var(--vscode-input-foreground);
+                            font-size: 0.9rem;
+                            box-sizing: border-box;
+                        }
+
+                        .form-input:focus {
+                            outline: none;
+                            border-color: var(--primary);
+                            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+                        }
+
+                        .form-help {
+                            font-size: 0.8rem;
+                            color: var(--vscode-descriptionForeground);
+                            margin-top: 5px;
+                        }
+
+                        .button-group {
+                            display: flex;
+                            gap: 10px;
+                            margin-top: 20px;
+                        }
+
+                        .secondary-button {
+                            background: transparent;
+                            color: var(--vscode-button-secondaryForeground);
+                            border: 1px solid var(--vscode-button-secondaryBorder);
+                            padding: 10px 20px;
+                            border-radius: var(--border-radius);
+                            font-size: 0.9rem;
+                            cursor: pointer;
+                            transition: var(--transition);
+                        }
+
+                        .secondary-button:hover {
+                            background: var(--vscode-button-secondaryHoverBackground);
+                        }
+
+                        .warning-box {
+                            background: rgba(255, 209, 102, 0.1);
+                            border: 1px solid var(--warning);
+                            border-radius: var(--border-radius);
+                            padding: 15px;
+                            margin: 20px 0;
+                            text-align: left;
+                        }
+
+                        .warning-box h4 {
+                            margin: 0 0 10px 0;
+                            color: var(--warning);
+                            font-size: 0.9rem;
+                        }
+
+                        .warning-box p {
+                            margin: 0;
+                            font-size: 0.8rem;
+                            color: var(--vscode-foreground);
                         }
                     </style>
                 </head>

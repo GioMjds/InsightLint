@@ -1,12 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as vscode from "vscode";
 
+export interface CodeIssue {
+    message: string;
+    line?: number;
+    column?: number;
+    severity: 'error' | 'warning' | 'info';
+    code?: string;
+}
+
 export interface CodeReviewResult {
-    suggestions: string[];
-    bugs: string[];
-    bestPractices: string[];
-    performance: string[];
-    security: string[];
+    suggestions: CodeIssue[];
+    bugs: CodeIssue[];
+    bestPractices: CodeIssue[];
+    performance: CodeIssue[];
+    security: CodeIssue[];
 }
 
 export class GeminiService {
@@ -32,25 +40,77 @@ export class GeminiService {
             throw new Error("Gemini model is not initialized. Please check your API key.");
         }
 
-        const prompt = `
-        Analyze this ${language} code and provide:
-        1. Code suggestions for improvement
-        2. Potential bugs or issues
-        3. Best practices recommendations
-        4. Performance optimizations
-        5. Security concerns
+        const numberedCode = this.addLineNumbers(code);
 
-        Code:
-        ${code}
+        const prompt = `
+        Analyze this ${language} code and provide specific feedback with line numbers where applicable.
+        
+        Code with line numbers:
+        ${numberedCode}
+
+        Please provide:
+        1. Code suggestions for improvement (with specific line numbers)
+        2. Potential bugs or issues (with specific line numbers)
+        3. Best practices recommendations (with specific line numbers)
+        4. Performance optimizations (with specific line numbers)
+        5. Security concerns (with specific line numbers)
+
+        For each issue, please specify:
+        - The exact line number where the issue occurs
+        - A clear description of the issue
+        - Suggested fix or improvement
+        - Severity level (error, warning, or info)
 
         Please format your response as JSON with the following structure:
         {
-            "suggestions": ["suggestion1", "suggestion2", "suggestion3", "suggestion4", "suggestion5"],
-            "bugs": ["bug1", "bug2", "bug3", "bug4", "bug5"],
-            "bestPractices": ["practice1", "practice2", "practice3", "practice4", "practice5"],
-            "performance": ["perf1", "perf2", "perf3", "perf4", "perf5"],
-            "security": ["sec1", "sec2", "sec3", "sec4", "sec5"]
+            "suggestions": [
+                {
+                    "message": "Description of the suggestion with fix",
+                    "line": 5,
+                    "severity": "info",
+                    "code": "problematic code snippet"
+                }
+            ],
+            "bugs": [
+                {
+                    "message": "Description of the bug and how to fix it",
+                    "line": 10,
+                    "severity": "error",
+                    "code": "buggy code snippet"
+                }
+            ],
+            "bestPractices": [
+                {
+                    "message": "Best practice recommendation",
+                    "line": 15,
+                    "severity": "warning",
+                    "code": "code that could be improved"
+                }
+            ],
+            "performance": [
+                {
+                    "message": "Performance optimization suggestion",
+                    "line": 20,
+                    "severity": "info",
+                    "code": "code that could be optimized"
+                }
+            ],
+            "security": [
+                {
+                    "message": "Security concern and fix",
+                    "line": 25,
+                    "severity": "error",
+                    "code": "potentially vulnerable code"
+                }
+            ]
         }
+
+        Important: 
+        - Always include line numbers when referencing specific code
+        - Use the exact line numbers from the numbered code provided
+        - If an issue spans multiple lines, reference the starting line
+        - Provide practical, actionable suggestions
+        - Include relevant code snippets in the "code" field
         `;
 
         const maxRetries: number = 3;
@@ -81,5 +141,20 @@ export class GeminiService {
             }
         }
         throw new Error(`Code review failed after multiple attempts.`);
+    }
+
+    private addLineNumbers(code: string): string {
+        const lines = code.split('\n');
+        return lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
+    }
+
+    private parseIssues(issues: any[]): CodeIssue[] {
+        return issues.map(issue => ({
+            message: issue.message,
+            line: issue.line,
+            column: issue.column,
+            severity: issue.severity || 'info',
+            code: issue.code || '',
+        }));
     }
 }
