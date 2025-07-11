@@ -1,6 +1,7 @@
-import { GeminiService, CodeReviewResult } from "./geminiService";
+import { GeminiService, CodeReviewResult, CodeIssue } from "./geminiService";
 import { languageDetector } from "../utils/languageDetector";
 import * as vscode from "vscode";
+import { MarkdownHelper } from "../utils/helpers";
 
 export class CodeAnalyzer {
     private geminiService: GeminiService;
@@ -28,6 +29,19 @@ export class CodeAnalyzer {
             });
 
             const result = await progress;
+
+            (["suggestions", "bugs", "bestPractices", "performance", "security"] as (keyof CodeReviewResult)[])
+                .forEach((section) => {
+                    if (Array.isArray(result[section])) {
+                        result[section] = result[section].map((item: CodeIssue) => ({
+                            ...item,
+                            message: typeof item.message === "string"
+                                ? MarkdownHelper.markdownToHtml(item.message)
+                                : "",
+                        }));
+                    }
+                });
+
             vscode.window.showInformationMessage("Code analysis completed successfully!");
             return result;
         } catch (error) {

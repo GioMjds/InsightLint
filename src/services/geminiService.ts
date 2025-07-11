@@ -124,12 +124,12 @@ export class GeminiService {
                 if (jsonMatch) {
                     const parsed = JSON.parse(jsonMatch[0]);
                 
-                    const result = {
-                        suggestions: parsed.suggestions || [],
-                        bugs: parsed.bugs || [],
-                        bestPractices: parsed.bestPractices || [],
-                        performance: parsed.performance || [],
-                        security: parsed.security || [],
+                    const result: CodeReviewResult = {
+                        suggestions: this.parseIssues(parsed.suggestions || []),
+                        bugs: this.parseIssues(parsed.bugs || []),
+                        bestPractices: this.parseIssues(parsed.bestPractices || []),
+                        performance: this.parseIssues(parsed.performance || []),
+                        security: this.parseIssues(parsed.security || []),
                     };
 
                     return result;

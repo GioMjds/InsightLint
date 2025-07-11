@@ -252,7 +252,7 @@ function createSectionWithLines(title, items) {
                     </div>
                 </div>
                 <div class="issue-content">
-                    <div class="issue-message">${escapeHtml(item.message)}</div>
+                    <div class="issue-message">${item.message}</div>
                     ${codeSnippet}
                 </div>
             </div>
