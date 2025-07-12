@@ -32,6 +32,24 @@
         "command": "insightlint.startReview",
         "title": "Start Code Review",
         "category": "InsightLint"
+      },
+      {
+        "command": "insightlint.clearResults",
+        "title": "Clear Results",
+        "category": "InsightLint"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "insightlint.reviewPanel.focus",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "!editorTextFocus"
+      },
+      {
+        "command": "workbench.view.extension.insightlint",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
       }
     ],
     "viewsContainers": {

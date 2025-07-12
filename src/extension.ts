@@ -11,7 +11,12 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(
             WebViewProvider.viewType,
-            webviewProvider
+            webviewProvider,
+            {
+                webviewOptions: {
+                    retainContextWhenHidden: true,
+                }
+            }
         )
     );
 
@@ -41,8 +46,13 @@ export function activate(context: vscode.ExtensionContext) {
                 );
                 return;
             }
+
+            const activeEditor = vscode.window.activeTextEditor;
+            const filename = activeEditor?.document.fileName
+                ? activeEditor.document.fileName.split("\\").pop() || ""
+                : "";
         
-            webviewProvider.showLoading();
+            webviewProvider.showLoading(filename);
         
             try {
                 const result = await codeAnalyzer.analyzeCurrentFile();
@@ -72,6 +82,13 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
+    const clearResultsCommand = vscode.commands.registerCommand(
+        'insightlint.clearResults',
+        async () => {
+            webviewProvider.clearResults();
+        }
+    );
+
     const onDidChangeConfiguration = vscode.workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration("insightlint.geminiApiKey")) {
             const config = vscode.workspace.getConfiguration("insightlint");
@@ -94,6 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         startReviewCommand,
         showPanelCommand,
+        clearResultsCommand,
         onDidChangeActiveTextEditor,
         onDidChangeConfiguration
     );

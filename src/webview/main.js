@@ -5,26 +5,27 @@ const statsBarEl = document.getElementById("stats-bar");
 const statusIndicator = document.getElementById("status-indicator");
 
 let hasApiKey = false;
+let currentFileName = "";
 
 window.addEventListener("message", (event) => {
-  const message = event.data;
+    const message = event.data;
 
-  if (message.type === "apiKeyStatus") {
-    hasApiKey = message.hasApiKey;
-    updateUI();
-  }
+    if (message.type === "apiKeyStatus") {
+        hasApiKey = message.hasApiKey;
+        updateUI();
+    }
 
-  switch (message.type) {
-    case "updateReview":
-      updateReviewContent(message.data);
-      break;
-    case "showLoading":
-      showLoading();
-      break;
-    case "hideLoading":
-      hideLoading();
-      break;
-  }
+    switch (message.type) {
+        case "updateReview":
+            updateReviewContent(message.data);
+            break;
+        case "showLoading":
+            showLoading();
+            break;
+        case "hideLoading":
+            hideLoading();
+            break;
+    }
 });
 
 function updateUI() {
@@ -158,13 +159,16 @@ function showLoading() {
         reviewButton.innerHTML = '<span class="button-icon">⏳</span>Analyzing...';
     }
 
+    const fileNameDisplay = currentFileName ? `<div class="loading-filename">Analyzing: ${currentFileName}</div>` : "";
+
     contentEl.innerHTML = `
         <div class="loading-container">
             <div class="spinner"></div>
             <p>AI is reviewing your code...</p>
+            ${fileNameDisplay}
             <div class="hint">This may take a few seconds</div>
         </div>
-      `;
+        `;
     statsBarEl.innerHTML = "";
 }
 
@@ -282,9 +286,9 @@ function getSeverityIcon(severity) {
 }
 
 function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function addCodeIssueStyles() {
@@ -369,7 +373,7 @@ function addCodeIssueStyles() {
             border-radius: 4px;
             padding: 8px 12px;
             font-family: var(--vscode-editor-font-family);
-            font-size: 0.85em;
+            font-size: 0.85rem;
             line-height: 1.4;
             overflow-x: auto;
             margin-top: 8px;
@@ -590,4 +594,8 @@ function addMarkdownStyles() {
 document.addEventListener("DOMContentLoaded", () => {
     statusIndicator.textContent = "Ready";
     addMarkdownStyles();
+
+    vscode.postMessage({
+        type: "webViewReady"
+    });
 });

@@ -169,6 +169,25 @@ header {
   padding: 40px 20px;
 }
 
+.loading-filename {
+  font-size: 1.1rem;
+  color: var(--vscode-foreground);
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family);
+  word-break: break-all;
+}
+
+/* Issue content text size */
+.issue-message {
+  line-height: 1.6;
+  margin-bottom: 8px;
+  color: var(--vscode-foreground);
+  font-size: 1rem; /* Increased */
+}
+
 .spinner {
   width: 40px;
   height: 40px;
@@ -203,7 +222,7 @@ header {
   border: none;
   padding: 12px 24px;
   border-radius: var(--border-radius);
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);

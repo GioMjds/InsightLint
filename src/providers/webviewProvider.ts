@@ -7,6 +7,9 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = "insightlint.reviewPanel";
 
     private _view?: vscode.WebviewView;
+    private _currentResults?: CodeReviewResult;
+    private _isLoading: boolean = false;
+    private _currentFileName?: string;
 
     constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -30,7 +33,6 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        // Handle messages from the webview
         webviewView.webview.onDidReceiveMessage((message) => {
             switch (message.type) {
                 case "startReview":
@@ -41,6 +43,9 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
                     break;
                 case "setApiKey":
                     this.setApiKey(message.apiKey);
+                    break;
+                case "webViewReady":
+                    this.onWebViewReady();
                     break;
             }
         });
@@ -63,6 +68,16 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
             vscode.window.showErrorMessage(`Failed to update API Key: ${error}`);
         }
     }
+    
+    private onWebViewReady() {
+        this.checkApiKey();
+
+        if (this._currentResults) {
+            this.updateContent(this._currentResults);
+        } else if (this._isLoading) {
+            this.showLoading();
+        }
+    }
 
     private checkApiKey() {
         const config = vscode.workspace.getConfiguration("insightlint");
@@ -77,6 +92,9 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
     }
 
     public async updateContent(reviewResult: CodeReviewResult) {
+        this._currentResults = reviewResult;
+        this._isLoading = false;
+
         if (this._view) {
             this._view.webview.postMessage({
                 type: "updateReview",
@@ -92,7 +110,6 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
         const indexPath = path.join(webviewDir.fsPath, "index.html");
         let html = fs.readFileSync(indexPath, "utf8");
 
-        // Fix resource URIs for VS Code webview
         const fixUri = (file: string) =>
             webview.asWebviewUri(vscode.Uri.joinPath(webviewDir, file));
         html = html.replace(/(src|href)="main\.(js|css)"/g, (match, attr, ext) => {
@@ -102,19 +119,31 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
         return html;
     }
 
-    public showLoading() {
+    public showLoading(filename?: string) {
+        this._isLoading = true;
+        this._currentResults = undefined;
+        this._currentFileName = filename;
+
         if (this._view) {
             this._view.webview.postMessage({
-                type: "showLoading"
+                type: "showLoading",
+                filename: filename
             });
         }
     }
 
     public hideLoading() {
+        this._isLoading = false;
+
         if (this._view) {
             this._view.webview.postMessage({
                 type: "hideLoading"
             });
         }
+    }
+
+    public clearResults() {
+        this._currentResults = undefined;
+        this._isLoading = false;
     }
 }
